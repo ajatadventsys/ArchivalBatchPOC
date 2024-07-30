@@ -1,6 +1,22 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+//New Table Archival_Schedule
+public class ArchivalSchedule
+{
+    [Key]
+    public long? SystemId { get; set; }
+
+    public string ProjectCode { get; set; }
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+    public string Status { get; set; }
+    public DateTime? CreatedOn { get; set; }
+    public string CreatedBy { get; set; }
+    public string Remarks { get; set; }
+    public DateTime? LastUpdate { get; set; }
+}
+
 //Primary Tables
 public class AuditHistory
 {

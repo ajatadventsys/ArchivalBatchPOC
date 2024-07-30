@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArchivalDbContext.cs" />
     <Compile Include="DbContext.cs" />
     <Compile Include="EntityClass.cs" />
     <Compile Include="Program.cs" />
