@@ -353,6 +353,7 @@ public class AutoApprovalLogArchival
     [Key]
     public long SystemId { get; set; } // Primary Key
 
+    public string ProjectCode { get; set; }
     public string RequisitionId { get; set; }
     public int? CountBCResults { get; set; }
     public int? CountTRF { get; set; }
@@ -361,4 +362,5 @@ public class AutoApprovalLogArchival
     public string ApprovedBy { get; set; }
     public string RegField6 { get; set; }
     public DateTime AutoProcessingDateTime { get; set; }
+
 }

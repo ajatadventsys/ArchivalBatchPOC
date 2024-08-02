@@ -12,7 +12,7 @@ public class ArchivalContext : DbContext
     public ArchivalContext() : base("name=ArchivalContext")
     {
         //if it is set then EF will not create DB if does not exist 
-        Database.SetInitializer<LIMSDevContext>(null);
+        Database.SetInitializer<ArchivalContext>(null);
     }
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
