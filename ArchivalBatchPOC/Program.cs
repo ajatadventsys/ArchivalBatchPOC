@@ -338,38 +338,34 @@ namespace ArchivalBatchPOC
                     }
 
                     // Handle AutoApprovalLog
-                    // Join AutoApprovalLogs with RegistrationInfos based on RequisitionId
-                    var autoapprovalFilteredRecords = from al in limsContext.AutoApprovalLogs
-                                                      join ri in limsContext.RegistrationInfos
-                                                      on al.RequisitionId equals ri.RequisitionId
-                                                      where al.AutoProcessingDateTime >= fromDate
-                                                            && al.AutoProcessingDateTime <= toDate
-                                                      select new
-                                                      {
-                                                          AutoApproval = al,
-                                                          Registration = ri
-                                                      };
+                    // Retrieve RequisitionIds from RegistrationInfos based on ProjectCode
+                    var requisitionIds = limsContext.RegistrationInfos
+                                                    .Where(r => r.ProjectCode == projectCode)
+                                                    .Select(r => r.RequisitionId)
+                                                    .ToList();
 
-                    // Convert the result to a list
-                    var autoapprovalFilteredRecordsList = autoapprovalFilteredRecords.ToList();
+                    // Retrieve matching records from AutoApprovalLogs where RequisitionId is in the list
+                    var matchingRecords = limsContext.AutoApprovalLogs
+                                                     .Where(a => requisitionIds.Contains(a.RequisitionId))
+                                                     .ToList();
 
-                    if (autoapprovalFilteredRecordsList.Any())
+                    if (matchingRecords.Any())
                     {
                         using (var archivalContext = new ArchivalContext())
                         {
                             // Prepare archival records
-                            var archivalAutoApprovalRecords = autoapprovalFilteredRecordsList.Select(record => new AutoApprovalLogArchival
+                            var archivalAutoApprovalRecords = matchingRecords.Select(al => new AutoApprovalLogArchival
                             {
-                                SystemId = record.AutoApproval.SystemId,
-                                RequisitionId = record.AutoApproval.RequisitionId,
-                                ProjectCode = record.Registration.ProjectCode, // Use ProjectCode from RegistrationInfos
-                                CountBCResults = record.AutoApproval.CountBCResults,
-                                CountTRF = record.AutoApproval.CountTRF,
-                                CountBCMatch = record.AutoApproval.CountBCMatch,
-                                SectionName = record.AutoApproval.SectionName,
-                                ApprovedBy = record.AutoApproval.ApprovedBy,
-                                RegField6 = record.AutoApproval.RegField6,
-                                AutoProcessingDateTime = record.AutoApproval.AutoProcessingDateTime
+                                SystemId = al.SystemId,
+                                RequisitionId = al.RequisitionId,
+                                ProjectCode = projectCode, // Assuming AutoApprovalLogArchival has a ProjectCode field
+                                CountBCResults = al.CountBCResults,
+                                CountTRF = al.CountTRF,
+                                CountBCMatch = al.CountBCMatch,
+                                SectionName = al.SectionName,
+                                ApprovedBy = al.ApprovedBy,
+                                RegField6 = al.RegField6,
+                                AutoProcessingDateTime = al.AutoProcessingDateTime
                             }).ToList();
 
                             // Insert records into archival database
@@ -377,7 +373,7 @@ namespace ArchivalBatchPOC
                             int autoApprovalLogCount = archivalContext.SaveChanges(); // Count of records inserted
 
                             // Delete records from original database
-                            limsContext.AutoApprovalLogs.RemoveRange(autoapprovalFilteredRecordsList.Select(record => record.AutoApproval));
+                            limsContext.AutoApprovalLogs.RemoveRange(matchingRecords);
                             limsContext.SaveChanges(); // Ensure deletion is saved
 
                             // Update remarks with the count of archived and deleted records
